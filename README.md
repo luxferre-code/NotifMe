@@ -1,9 +1,3 @@
-<style>
-    h1 {
-        text-align: center;
-    }
-</style>
-
 # 📅 | NotifMe
 
 > NotifMe is a Python script that allows you to automate sending your calendar to your devices. It is very user-friendly and does not require much computing power. A simple internet connection is all that is needed to run the program.  
