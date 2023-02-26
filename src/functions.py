@@ -69,6 +69,9 @@ def setup():
         except:
             print(f"{Fore.RED}Error: Invalid Pushbullet token!{Fore.RESET}")
 
+    if(not os.path.exists("../ressources")):
+        os.mkdir("../ressources")
+
     with open("../ressources/config.json", "w") as f:
         json.dump(config, f, indent=4)
 
