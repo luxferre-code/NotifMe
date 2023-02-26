@@ -76,9 +76,8 @@ def setup():
     while add_crontab not in ["y", "n"]:
         add_crontab = ask("Do you want to add a crontab to run the program every day? (y/n): ")
     if(add_crontab == "y"):
-        print(f"{Fore.YELLOW}Your name is: {Fore.RESET}", end=": ")
-        crontab = CronTab(user=os.system("whoami"))
-        job = crontab.new(command="python3 /home/pi/NotifMe/src/main.py")
+        crontab = CronTab(user=True)
+        job = crontab.new(command=f"python3 {os.path.dirname(os.path.realpath(__file__))}/main.py")
         job.hour.on(ask_number("Hour: ", 0, 23))
         job.minute.on(ask_number("Minute: ", 0, 59))
         crontab.write()

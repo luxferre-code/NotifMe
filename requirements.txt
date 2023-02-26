@@ -1,0 +1,5 @@
+colorama==0.4.6
+icalendar==5.0.4
+pushbullet.py==0.12.0
+python_crontab==2.7.1
+requests==2.25.1
