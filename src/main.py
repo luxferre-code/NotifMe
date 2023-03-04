@@ -8,7 +8,7 @@ try:
     import sys
     import os
     from colorama import Fore, init
-    from datetime import datetime
+    from datetime import datetime, timedelta
     from functions import *
     from pushbullet import Pushbullet
     import sys
@@ -59,16 +59,15 @@ if(not check_if_config_file_exists(config_file_name)):
 print(f"{Fore.YELLOW}NotifMe - A simple ics notification system to your phone{Fore.RESET}")
 
 config = load_config_file(config_file_name)
-schedule = get_schedule(str(datetime.now())[:10], config["calendar"])
+schedule = get_schedule(str(datetime.now() + timedelta(days=1))[:10], config["calendar"])
 schedule.sort(key=lambda x: x['dtstart'].time())
-string = "Hey " + config["name"] + ",\nHere's your schedule for today:\n\n"
+string = "Hey " + config["name"] + ",\nHere's your schedule for tomorrow:\n\n"
 for event in schedule:
     string += f"{event['summary']} ({event['location']})\n {event['dtstart'].time()}- {event['dtend'].time()}\n"
 
 if(len(schedule) == 0):
-    string += "You have no events today!"
-else:
-    string += f"\nHave a nice day!\n\nNotifMe by Valentin Thuillier"
+    string += "You have no events today!\n"
+string += f"\nHave a nice day!\n\n~ NotifMe by Valentin Thuillier ~"
 
 if(config["pushbullet"] != None):
     pb = Pushbullet(config["pushbullet"])

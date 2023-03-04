@@ -1,3 +1,10 @@
+"""
+    NotifMe - A simple ics notification system to your phone
+    Credits:
+        - LuxFerre
+    Started on: 26-02-2023
+"""
+
 try:
     import os
     import sys
