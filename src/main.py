@@ -68,7 +68,7 @@ for event in schedule:
 if(len(schedule) == 0):
     string += "You have no events today!"
 else:
-    string += f"\nHave a nice day!"
+    string += f"\nHave a nice day!\n\nNotifMe by Valentin Thuillier"
 
 if(config["pushbullet"] != None):
     pb = Pushbullet(config["pushbullet"])
