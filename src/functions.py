@@ -44,6 +44,7 @@ def setup():
     print(f"{Fore.YELLOW}Please enter the following information:{Fore.RESET}")
     config = {}
     config["name"] = ask("Name: ")
+    config_file_name = genere_random_code() + ".json"
     
     while True:
         calendar_link = ask("Calendar link: ")
@@ -53,26 +54,22 @@ def setup():
         else:
             print(f"{Fore.RED}Error: Invalid calendar link!{Fore.RESET}")
 
-    while True:
-        pushbullet_token = ask("Pushbullet token: ")
-        try:
-            pb = Pushbullet(pushbullet_token)
-            
-            # Send a code to confirm the token
-            code = genere_random_code()
-            pb.push_note("NotifMe setup", f"Your code is: {code}")
-            if(ask("Please enter the code you received: ") == code):
-                config["pushbullet_token"] = pushbullet_token
-                break
-            else:
-                print(f"{Fore.RED}Error: Invalid code!{Fore.RESET}")
-        except:
-            print(f"{Fore.RED}Error: Invalid Pushbullet token!{Fore.RESET}")
+    
+    choix = None
+    while choix not in ["1", "2"]:
+        choix = ask("1. Pushbullet\n2. NTFY\n=> ")
+    if(choix == "1"):
+        config["pushbullet"] = ask("Pushbullet API key: ")
+        config["ntfy"] = None
+    else:
+        config["ntfy"] = ask("NTFY URL: ")
+        config["pushbullet"] = None
+    
 
-    if(not os.path.exists("../ressources")):
-        os.mkdir("../ressources")
+    if(not os.path.exists(f"{os.path.dirname(os.path.realpath(__file__))}/../ressources")):
+        os.mkdir(f"{os.path.dirname(os.path.realpath(__file__))}/../ressources")
 
-    with open("../ressources/config.json", "w") as f:
+    with open(f"{os.path.dirname(os.path.realpath(__file__))}/../ressources/{config_file_name}", "w") as f:
         json.dump(config, f, indent=4)
 
     add_crontab = None
@@ -80,7 +77,7 @@ def setup():
         add_crontab = ask("Do you want to add a crontab to run the program every day? (y/n): ")
     if(add_crontab == "y"):
         crontab = CronTab(user=True)
-        job = crontab.new(command=f"python3 {os.path.dirname(os.path.realpath(__file__))}/main.py")
+        job = crontab.new(command=f"python3 {os.path.dirname(os.path.realpath(__file__))}/main.py {os.path.dirname(os.path.realpath(__file__))}/../ressources/{config_file_name}", comment="NotifMe")
         job.hour.on(ask_number("Hour: ", 0, 23))
         job.minute.on(ask_number("Minute: ", 0, 59))
         crontab.write()
@@ -88,9 +85,13 @@ def setup():
     print(f"{Fore.GREEN}Setup complete!{Fore.RESET}")
     sys.exit(0)
 
-def load_config_file() -> dict:
+def check_if_config_file_exists(config_file_name: str) -> bool:
+    return os.path.exists(config_file_name)
+
+def load_config_file(config_file_name: str) -> dict:
     try:
-        with open("../ressources/config.json", "r") as f:
+        print(os.getcwd())
+        with open(f"{config_file_name}", "r") as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"{Fore.RED}Error: config.json not found!{Fore.RESET}\nPlease use python3 main.py --setup to create a config file")
@@ -125,3 +126,24 @@ def string_schedule(date: str, link: str) -> str:
         text = event['summary'].split(" - ")
         string += f"{text[1]} | {event['location']}\n=> {start_time} - {end_time}\n\n"
     return string
+
+
+def send_ntfy(schedule: str, url: str):
+    headers = {
+        'Title': 'NotifMe - Schedule for today',
+        'Priority': 'default',
+        'Tags': 'spiral_calendar',
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+
+    if("http" not in url):
+        url = "http://" + url
+
+    response = requests.post(url, headers=headers, data=schedule)
+
+def purge_all_crontab():
+    crontab = CronTab(user=True)
+    for job in crontab:
+        if(job.comment == "NotifMe"):
+            crontab.remove(job)
+    crontab.write()
